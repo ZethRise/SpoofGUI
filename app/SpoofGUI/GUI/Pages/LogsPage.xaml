@@ -1,0 +1,56 @@
+<Page
+    x:Class="SpoofGUI.GUI.Pages.LogsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource SurfaceBase}">
+
+    <Grid Padding="32,48,32,32" RowSpacing="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Spacing="6">
+                <TextBlock Text="Logs" Style="{StaticResource TextCaption}" />
+                <TextBlock Text="runtime events" Style="{StaticResource TextDisplay}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="12"
+                        VerticalAlignment="Center"
+                        Margin="16,0,0,0">
+                <Button Style="{StaticResource SecondaryButton}"
+                        MinWidth="104"
+                        Click="OnCopyLogs">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="Copy" Foreground="{StaticResource TextPrimary}" />
+                        <TextBlock Text="Copy Logs" />
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource SecondaryButton}"
+                        MinWidth="84"
+                        Click="OnClear">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="Delete" Foreground="{StaticResource TextPrimary}" />
+                        <TextBlock Text="clear" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <TextBox x:Name="LogText"
+                 Grid.Row="1"
+                 Style="{StaticResource FieldTextBox}"
+                 AcceptsReturn="True"
+                 IsReadOnly="True"
+                 TextWrapping="NoWrap"
+                 FontFamily="{StaticResource FontFamilyMono}"
+                 VerticalAlignment="Stretch"
+                 HorizontalAlignment="Stretch" />
+    </Grid>
+</Page>

@@ -1,0 +1,31 @@
+# Rust
+engine/target/
+**/*.rs.bk
+Cargo.lock
+
+# .NET
+app/**/bin/
+app/**/obj/
+app/**/.vs/
+app/**/*.user
+app/**/AppPackages/
+app/**/BundleArtifacts/
+app/**/*.binlog
+
+# SQLite local DB (runtime)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Reference (kept locally, ignore from history)
+_reference/
+
+# PyInstaller (engine build intermediates)
+build/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+dist/

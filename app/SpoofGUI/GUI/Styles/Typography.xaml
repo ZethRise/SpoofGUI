@@ -1,0 +1,54 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <x:String x:Key="FontFamilyUI">Segoe UI Variable Text, Inter, Segoe UI</x:String>
+    <x:String x:Key="FontFamilyMono">JetBrains Mono, Cascadia Mono, Consolas</x:String>
+
+    <Style x:Key="TextDisplay" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyUI}" />
+        <Setter Property="FontSize" Value="36" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LineHeight" Value="41" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+    <Style x:Key="TextH1" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyUI}" />
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+    <Style x:Key="TextH2" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyUI}" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+    <Style x:Key="TextBody" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyUI}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+    <!-- Renamed to avoid key collision with the TextSecondary brush. -->
+    <Style x:Key="TextBodyMuted" TargetType="TextBlock" BasedOn="{StaticResource TextBody}">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+    </Style>
+
+    <Style x:Key="TextCaption" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyUI}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource TextTertiary}" />
+    </Style>
+
+    <Style x:Key="TextMono" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyMono}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+    </Style>
+</ResourceDictionary>

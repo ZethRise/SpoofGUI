@@ -1,0 +1,50 @@
+[package]
+name = "spoof-engine"
+version = "1.0.0"
+edition = "2021"
+license = "GPL-3.0-only"
+description = "SNI-Spoofing DPI bypass engine. Sidecar binary for SpoofGUI."
+repository = "https://github.com/patterniha/SNI-Spoofing"
+
+[[bin]]
+name = "spoof-engine"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+clap = { version = "4", features = ["derive"] }
+rand = "0.8"
+bytes = "1"
+futures = "0.3"
+etherparse = "0.13"
+socket2 = "0.5"
+parking_lot = "0.12"
+
+[target.'cfg(windows)'.dependencies.windivert]
+version = "0.6"
+features = ["vendored"]
+
+[target.'cfg(windows)'.dependencies.windows-sys]
+version = "0.59"
+features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Pipes",
+    "Win32_Security",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_NetworkManagement_Ndis",
+    "Win32_Networking_WinSock",
+]
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+opt-level = 3

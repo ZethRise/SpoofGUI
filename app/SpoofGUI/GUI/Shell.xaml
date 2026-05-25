@@ -1,0 +1,128 @@
+<UserControl
+    x:Class="SpoofGUI.GUI.Shell"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pages="using:SpoofGUI.GUI.Pages"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    Background="{StaticResource SurfaceBase}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left rail -->
+        <Border Grid.Column="0"
+                Background="{StaticResource SurfaceSunken}"
+                BorderBrush="{StaticResource BorderSubtle}"
+                BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0"
+                            Orientation="Vertical"
+                            Padding="20,28,20,24"
+                            Spacing="2">
+                    <Image Source="ms-appx:///Assets/SpoofGUILogo.png"
+                           Width="150"
+                           HorizontalAlignment="Left"
+                           Stretch="Uniform" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1"
+                            Orientation="Vertical"
+                            Padding="8,0,8,0"
+                            Spacing="2">
+                    <Button x:Name="NavMain"
+                            Click="OnNavMain"
+                            HorizontalContentAlignment="Left"
+                            HorizontalAlignment="Stretch"
+                            Padding="12,0"
+                            MinHeight="40"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="3">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <SymbolIcon Symbol="Home" Foreground="{StaticResource TextPrimary}" />
+                            <TextBlock Text="Main" Style="{StaticResource TextBody}" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="NavConfig"
+                            Click="OnNavConfig"
+                            HorizontalContentAlignment="Left"
+                            HorizontalAlignment="Stretch"
+                            Padding="12,0"
+                            MinHeight="40"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="3">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <SymbolIcon Symbol="Edit" Foreground="{StaticResource TextPrimary}" />
+                            <TextBlock Text="Config" Style="{StaticResource TextBody}" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="NavV2Ray"
+                            Click="OnNavV2Ray"
+                            HorizontalContentAlignment="Left"
+                            HorizontalAlignment="Stretch"
+                            Padding="12,0"
+                            MinHeight="40"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="3">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <SymbolIcon Symbol="Globe" Foreground="{StaticResource TextPrimary}" />
+                            <TextBlock Text="V2Ray" Style="{StaticResource TextBody}" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="NavSettings"
+                            Click="OnNavSettings"
+                            HorizontalContentAlignment="Left"
+                            HorizontalAlignment="Stretch"
+                            Padding="12,0"
+                            MinHeight="40"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="3">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <SymbolIcon Symbol="Setting" Foreground="{StaticResource TextPrimary}" />
+                            <TextBlock Text="Settings" Style="{StaticResource TextBody}" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="NavLogs"
+                            Click="OnNavLogs"
+                            HorizontalContentAlignment="Left"
+                            HorizontalAlignment="Stretch"
+                            Padding="12,0"
+                            MinHeight="40"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="3">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <SymbolIcon Symbol="Document" Foreground="{StaticResource TextPrimary}" />
+                            <TextBlock Text="Logs" Style="{StaticResource TextBody}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2"
+                            Orientation="Vertical"
+                            Padding="20,16,20,20"
+                            Spacing="2">
+                    <HyperlinkButton Content="SpoofGUI Repo"
+                                     NavigateUri="https://github.com/ZethRise/SpoofGUI"
+                                     Padding="0"
+                                     Foreground="{StaticResource TextTertiary}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Frame x:Name="ContentFrame" Grid.Column="1" />
+    </Grid>
+</UserControl>

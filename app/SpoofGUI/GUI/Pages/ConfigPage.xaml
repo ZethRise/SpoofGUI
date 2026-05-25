@@ -1,0 +1,87 @@
+<Page
+    x:Class="SpoofGUI.GUI.Pages.ConfigPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource SurfaceBase}">
+
+    <ScrollViewer>
+        <Grid Padding="32,32,32,32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Spacing="6">
+                <TextBlock Text="Config" Style="{StaticResource TextCaption}" />
+                <TextBlock Text="active profile" Style="{StaticResource TextDisplay}" />
+                <TextBlock Text="Edits apply on next start. Running profile cannot be changed while listener is ready."
+                           Style="{StaticResource TextBodyMuted}"
+                           MaxWidth="560" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Margin="0,32,0,0" Spacing="12">
+                <TextBlock Text="Local listener" Style="{StaticResource TextH2}" />
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Listen Host" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="ListenHost" Style="{StaticResource FieldTextBox}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Listen Port" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="ListenPort" Style="{StaticResource FieldTextBox}" InputScope="Number" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Margin="0,32,0,0" Spacing="12">
+                <TextBlock Text="Remote target" Style="{StaticResource TextH2}" />
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Connect IP" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="ConnectIp" Style="{StaticResource FieldTextBox}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Connect Port" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="ConnectPort" Style="{StaticResource FieldTextBox}" InputScope="Number" />
+                    </StackPanel>
+                </Grid>
+                <StackPanel>
+                    <TextBlock Text="Fake SNI" Style="{StaticResource FieldLabel}" />
+                    <TextBox x:Name="FakeSni" Style="{StaticResource FieldTextBox}" />
+                    <TextBlock Text="Hostname the DPI middlebox sees in the injected ClientHello."
+                               Style="{StaticResource TextCaption}"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="12"
+                        Margin="0,32,0,0">
+                <Button Style="{StaticResource SecondaryButton}" Click="OnRevert">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="Undo" Foreground="{StaticResource TextPrimary}" />
+                        <TextBlock Text="revert" />
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource PrimaryButton}" Click="OnSave">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="Save" Foreground="#15181E" />
+                        <TextBlock Text="save" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>
