@@ -15,11 +15,16 @@ public sealed class SingBoxTunnelService : IDisposable
     private const string TunAddress = "198.18.0.1/30";
 
     private readonly ILogger<SingBoxTunnelService> _log;
+    private readonly AppSettings _appSettings;
     private Process? _proc;
 
     public bool IsRunning => _proc is { HasExited: false };
 
-    public SingBoxTunnelService(ILogger<SingBoxTunnelService> log) => _log = log;
+    public SingBoxTunnelService(ILogger<SingBoxTunnelService> log, AppSettings appSettings)
+    {
+        _log = log;
+        _appSettings = appSettings;
+    }
 
     public void Start(V2RayProfile profile)
     {
@@ -136,10 +141,12 @@ public sealed class SingBoxTunnelService : IDisposable
             {
                 ["servers"] = new JsonArray
                 {
-                    new JsonObject { ["type"] = "udp", ["tag"] = "remote", ["server"] = "8.8.8.8", ["detour"] = "proxy" },
-                    new JsonObject { ["type"] = "udp", ["tag"] = "local", ["server"] = "1.1.1.1" },
+                    DnsServer("remote", _appSettings.RemoteDns, "proxy"),
+                    DnsServer("local", _appSettings.DirectDns, null),
+                    DnsServer("bootstrap", _appSettings.BootstrapDns, null),
                 },
                 ["final"] = "remote",
+                ["strategy"] = _appSettings.DnsStrategy,
             },
             ["inbounds"] = new JsonArray
             {
@@ -168,13 +175,55 @@ public sealed class SingBoxTunnelService : IDisposable
                 {
                     new JsonObject { ["action"] = "sniff" },
                     new JsonObject { ["protocol"] = "dns", ["action"] = "hijack-dns" },
+                    new JsonObject
+                    {
+                        ["ip_cidr"] = new JsonArray
+                        {
+                            "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",
+                            "169.254.0.0/16", "100.64.0.0/10", "224.0.0.0/4",
+                        },
+                        ["outbound"] = "direct",
+                    },
                 },
                 ["auto_detect_interface"] = true,
 
-                ["default_domain_resolver"] = new JsonObject { ["server"] = "local" },
+                ["default_domain_resolver"] = new JsonObject { ["server"] = "bootstrap" },
                 ["final"] = "proxy",
             },
         };
+    }
+
+    private static JsonObject DnsServer(string tag, string value, string? detour)
+    {
+        value = (value ?? "").Trim();
+        var node = new JsonObject { ["tag"] = tag };
+        var schemeIndex = value.IndexOf("://", StringComparison.Ordinal);
+        if (schemeIndex > 0)
+        {
+            var scheme = value[..schemeIndex].ToLowerInvariant();
+            var rest = value[(schemeIndex + 3)..];
+            var slash = rest.IndexOf('/');
+            var host = slash >= 0 ? rest[..slash] : rest;
+            var path = slash >= 0 ? rest[slash..] : null;
+            node["type"] = scheme switch
+            {
+                "https" => "https",
+                "tls" => "tls",
+                "quic" => "quic",
+                "h3" => "h3",
+                _ => "udp",
+            };
+            node["server"] = host;
+            if (path is not null && scheme is "https" or "h3") node["path"] = path;
+        }
+        else
+        {
+            node["type"] = "udp";
+            node["server"] = value;
+        }
+
+        if (detour is not null) node["detour"] = detour;
+        return node;
     }
 
     private JsonObject BuildOutbound(V2RayProfile profile)

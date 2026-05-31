@@ -30,6 +30,9 @@ CLAUDE.md
 # Temp / throwaway tooling
 .tools/
 
+# Release notes (added manually to the GitHub release, not committed)
+release.md
+
 # Agent skills (local tooling, not part of the app)
 .agents/
 skills-lock.json

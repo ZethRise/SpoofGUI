@@ -1,3 +1,4 @@
+using SpoofGUI.Core;
 using SpoofGUI.Database;
 using SpoofGUI.Models;
 
@@ -5,10 +6,16 @@ namespace SpoofGUI.GUI.ViewModels;
 
 public sealed class ConfigPageViewModel
 {
-    public const int MaxProfiles = 10;
+    public const int MaxProfiles = 100;
 
     private readonly ProfileRepository _profiles;
-    public ConfigPageViewModel(ProfileRepository profiles) => _profiles = profiles;
+    private readonly SniListService _sniList;
+
+    public ConfigPageViewModel(ProfileRepository profiles, SniListService sniList)
+    {
+        _profiles = profiles;
+        _sniList = sniList;
+    }
 
     public IReadOnlyList<SpoofProfile> All() => _profiles.All();
     public int Count() => _profiles.Count();
@@ -19,7 +26,7 @@ public sealed class ConfigPageViewModel
         var existing = _profiles.All();
         return new SpoofProfile
         {
-            Name = UniqueName(existing, "profile"),
+            Name = UniqueName(existing.Select(p => p.Name), "profile"),
             ListenHost = "0.0.0.0",
             ListenPort = 40443,
             ConnectIp = "104.19.229.21",
@@ -36,15 +43,49 @@ public sealed class ConfigPageViewModel
     public void SetActive(long id) => _profiles.SetActive(id);
     public void Delete(long id) => _profiles.Delete(id);
 
-    private static string UniqueName(IReadOnlyList<SpoofProfile> existing, string baseName)
+    public Task<IReadOnlyList<SniListEntry>> FetchSniListAsync() => _sniList.FetchAsync();
+
+    public (int Added, int Skipped) AddFromEntries(IReadOnlyList<SniListEntry> entries)
     {
-        var names = existing.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        for (var i = 1; i <= 99; i++)
+        var existing = _profiles.All();
+        var names = new HashSet<string>(existing.Select(p => p.Name), StringComparer.OrdinalIgnoreCase);
+        var slots = MaxProfiles - existing.Count;
+        var added = 0;
+        var skipped = 0;
+
+        foreach (var entry in entries)
         {
-            var candidate = $"{baseName} {i}";
-            if (!names.Contains(candidate)) return candidate;
+            if (slots <= 0) { skipped++; continue; }
+            var name = UniqueName(names, entry.Sni);
+            names.Add(name);
+            _profiles.Upsert(new SpoofProfile
+            {
+                Name = name,
+                ListenHost = "0.0.0.0",
+                ListenPort = 40443,
+                ConnectIp = entry.Ip,
+                ConnectPort = entry.Port,
+                FakeSni = entry.Sni,
+                IsActive = existing.Count == 0 && added == 0,
+            });
+            added++;
+            slots--;
         }
 
-        return $"{baseName} {Guid.NewGuid():N}";
+        return (added, skipped);
+    }
+
+    private static string UniqueName(IEnumerable<string> existing, string baseName)
+    {
+        var names = existing as ICollection<string> ?? existing.ToList();
+        var taken = new HashSet<string>(names, StringComparer.OrdinalIgnoreCase);
+        if (!taken.Contains(baseName)) return baseName;
+        for (var i = 2; i <= 999; i++)
+        {
+            var candidate = $"{baseName} ({i})";
+            if (!taken.Contains(candidate)) return candidate;
+        }
+
+        return $"{baseName} ({Guid.NewGuid():N})";
     }
 }

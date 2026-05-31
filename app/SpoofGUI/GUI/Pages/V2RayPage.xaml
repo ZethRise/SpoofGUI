@@ -134,10 +134,15 @@
                         <TextBlock Text="new" />
                     </StackPanel>
                 </Button>
-                <Button x:Name="PingButton" Style="{StaticResource SecondaryButton}" Click="OnPing">
+                <Button x:Name="PingButton" Style="{StaticResource SecondaryButton}" Click="OnPingAll">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <SymbolIcon Symbol="Clock" Foreground="{StaticResource TextPrimary}" />
-                        <TextBlock x:Name="PingLabel" Text="ping" />
+                        <ProgressRing x:Name="PingSpinner"
+                                      Width="16" Height="16"
+                                      Foreground="{StaticResource AccentBase}"
+                                      IsActive="False"
+                                      Visibility="Collapsed" />
+                        <SymbolIcon x:Name="PingIcon" Symbol="Clock" Foreground="{StaticResource TextPrimary}" />
+                        <TextBlock x:Name="PingLabel" Text="ping all" />
                     </StackPanel>
                 </Button>
                 <Button x:Name="EditButton" Style="{StaticResource SecondaryButton}" Click="OnEdit">
@@ -170,6 +175,20 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="0,8" ColumnSpacing="16">
+                        <Grid.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Ping" Click="OnPingOne">
+                                    <MenuFlyoutItem.Icon>
+                                        <SymbolIcon Symbol="Clock" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="Export config" Click="OnExportConfig">
+                                    <MenuFlyoutItem.Icon>
+                                        <SymbolIcon Symbol="Copy" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -180,6 +199,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="2">
                             <TextBlock Text="{Binding Protocol}" Style="{StaticResource TextCaption}" HorizontalAlignment="Right" />
+                            <TextBlock Text="{Binding Ping}" Style="{StaticResource TextMono}" FontSize="12" Foreground="{StaticResource AccentBase}" HorizontalAlignment="Right" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

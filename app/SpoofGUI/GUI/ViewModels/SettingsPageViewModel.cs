@@ -54,6 +54,24 @@ public sealed class SettingsPageViewModel
         set => _app.CheckUpdatesOnLaunch = value;
     }
 
+    public bool FastMode
+    {
+        get => _app.FastMode;
+        set => _app.FastMode = value;
+    }
+
+    public string RemoteDns { get => _app.RemoteDns; set => _app.RemoteDns = value; }
+    public string DirectDns { get => _app.DirectDns; set => _app.DirectDns = value; }
+    public string BootstrapDns { get => _app.BootstrapDns; set => _app.BootstrapDns = value; }
+    public string DnsStrategy { get => _app.DnsStrategy; set => _app.DnsStrategy = value; }
+
+    public void SaveDns(string remote, string direct, string bootstrap)
+    {
+        _app.RemoteDns = remote;
+        _app.DirectDns = direct;
+        _app.BootstrapDns = bootstrap;
+    }
+
     public string DataFolder => Paths.AppDataDir;
 
     public void OpenDataFolder()

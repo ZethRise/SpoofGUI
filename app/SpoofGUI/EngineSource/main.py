@@ -69,6 +69,7 @@ LISTEN_PORT = config["LISTEN_PORT"]
 FAKE_SNI = config["FAKE_SNI"].encode()
 CONNECT_IP = config["CONNECT_IP"]
 CONNECT_PORT = config["CONNECT_PORT"]
+FAST_MODE = bool(config.get("FAST_MODE", False))
 INTERFACE_IPV4 = get_default_interface_ipv4(CONNECT_IP)
 DATA_MODE = "tls"
 BYPASS_METHOD = "wrong_seq"
@@ -78,52 +79,68 @@ BYPASS_METHOD = "wrong_seq"
 fake_injective_connections: dict[tuple, FakeInjectiveConnection] = {}
 
 
-def _safe_close(sock: socket.socket):
+def _configure_sock(sock: socket.socket):
+    # SpoofGUI fork patch (ported from atarevals/SNI-Spoofing): TCP_NODELAY kills
+    # Nagle latency; Fast Mode uses small buffers (less queuing, lower latency for
+    # games/realtime), otherwise large buffers favour throughput.
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
     try:
-        sock.close()
-    except Exception:
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 11)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 2)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 3)
+    except (AttributeError, OSError):
         pass
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    if FAST_MODE:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 32768)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 32768)
+    else:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 262144)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 262144)
 
 
-def _safe_cancel(task: asyncio.Task):
-    try:
-        task.cancel()
-    except Exception:
-        pass
+async def _relay_pair(sock_a: socket.socket, sock_b: socket.socket):
+    # SpoofGUI fork patch (ported from atarevals/SNI-Spoofing): bidirectional relay
+    # that shuts both sockets down cleanly instead of cancelling the peer task. This
+    # avoids the Windows proactor "Cancelling an overlapped future failed" storm and
+    # never terminates the engine on a single dropped connection.
+    loop = asyncio.get_running_loop()
+    shutdown_initiated = False
 
-
-async def relay_main_loop(sock_1: socket.socket, sock_2: socket.socket, peer_task: asyncio.Task,
-                          first_prefix_data: bytes):
-    try:
-        loop = asyncio.get_running_loop()
-        while True:
+    def _shutdown_both():
+        nonlocal shutdown_initiated
+        if shutdown_initiated:
+            return
+        shutdown_initiated = True
+        for s in (sock_a, sock_b):
             try:
-                data = await loop.sock_recv(sock_1, 65575)
+                s.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+
+    async def _forward(src, dst):
+        try:
+            while True:
+                data = await loop.sock_recv(src, 65536)
                 if not data:
-                    raise ValueError("eof")
-                if first_prefix_data:
-                    data = first_prefix_data + data
-                    first_prefix_data = b""
-                sent_len = await loop.sock_sendall(sock_2, data)
-                if sent_len != len(data):
-                    raise ValueError("incomplete send")
-            except Exception:
-                _safe_close(sock_1)
-                _safe_close(sock_2)
-                _safe_cancel(peer_task)
-                return
-    except Exception:
-        # SpoofGUI fork patch: on Windows the proactor event loop can raise a
-        # ConnectionResetError ([WinError 64]) from inside _cancel_overlapped while
-        # the inner handler is already tearing a relay down. Upstream calls sys.exit
-        # here, which kills the whole engine on a single dropped connection — this is
-        # the root cause of issues #2 and #3 (one reset stops all traffic and the
-        # xray pipe closes with "closed pipe"). Tear down only this relay pair and
-        # keep serving every other client.
-        _safe_close(sock_1)
-        _safe_close(sock_2)
-        _safe_cancel(peer_task)
-        return
+                    break
+                await loop.sock_sendall(dst, data)
+        except (OSError, ConnectionError, asyncio.CancelledError):
+            pass
+        finally:
+            _shutdown_both()
+
+    await asyncio.gather(
+        _forward(sock_a, sock_b),
+        _forward(sock_b, sock_a),
+        return_exceptions=True,
+    )
+
+    for s in (sock_a, sock_b):
+        try:
+            s.close()
+        except OSError:
+            pass
 
 
 async def handle(incoming_sock: socket.socket, incoming_remote_addr):
@@ -188,10 +205,7 @@ async def handle(incoming_sock: socket.socket, incoming_remote_addr):
         outgoing_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         outgoing_sock.setblocking(False)
         outgoing_sock.bind((INTERFACE_IPV4, 0))
-        outgoing_sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-        outgoing_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 11)
-        outgoing_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 2)
-        outgoing_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 3)
+        _configure_sock(outgoing_sock)
         src_port = outgoing_sock.getsockname()[1]
         fake_injective_conn = FakeInjectiveConnection(outgoing_sock, INTERFACE_IPV4, CONNECT_IP, src_port, CONNECT_PORT,
                                                       fake_data,
@@ -241,11 +255,7 @@ async def handle(incoming_sock: socket.socket, incoming_remote_addr):
         #         incoming_sock.close()
         #         return
 
-        oti_task = asyncio.create_task(
-            relay_main_loop(outgoing_sock, incoming_sock, asyncio.current_task(), b""))  # bytes([version, 0])
-        await relay_main_loop(incoming_sock, outgoing_sock, oti_task, b"")
-
-
+        await _relay_pair(incoming_sock, outgoing_sock)
 
     except Exception:
         # SpoofGUI fork patch: a single failed connection must never terminate the
@@ -269,10 +279,7 @@ async def main():
     while True:
         incoming_sock, addr = await loop.sock_accept(mother_sock)
         incoming_sock.setblocking(False)
-        incoming_sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-        incoming_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 11)
-        incoming_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 2)
-        incoming_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 3)
+        _configure_sock(incoming_sock)
         asyncio.create_task(handle(incoming_sock, addr))
 
 

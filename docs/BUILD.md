@@ -1,6 +1,6 @@
 # Building SpoofGUI
 
-This document describes the 1.0.2 release pipeline.
+This document describes the 1.0.3 release pipeline.
 
 ## What Gets Built
 
@@ -138,6 +138,6 @@ The shipping app spawns the SNI engine plus one proxy core depending on the acti
 
 | Process | Source | Role |
 | --- | --- | --- |
-| `SpoofGUI.SniSpoofEngine.exe` | `app/SpoofGUI/EngineSource/` (vendored Python) | Reads `engine\config.json`, runs the WinDivert + fake-ClientHello listener on port 40443. A single dropped connection no longer terminates the engine (1.0.2 fix). |
+| `SpoofGUI.SniSpoofEngine.exe` | `app/SpoofGUI/EngineSource/` (vendored Python) | Reads `engine\config.json`, runs the WinDivert + fake-ClientHello listener on port 40443. 1.0.3 rebuilt the relay (resilient — a dropped connection never kills the engine) and added `FAST_MODE` low-latency sockets, adapted from atarevals/SNI-Spoofing. |
 | `xray.exe` | fetched ([XTLS/Xray-core](https://github.com/XTLS/Xray-core)) | Proxy / System Proxy modes. Started by `XrayCoreService` after generating `%LOCALAPPDATA%\SpoofGUI\xray-client.json` (SOCKS/HTTP inbounds). |
 | `sing-box.exe` | fetched ([SagerNet/sing-box](https://github.com/SagerNet/sing-box)) | Tunnel Mode only. Started by `SingBoxTunnelService` as a full core: tun inbound (`auto_route` + `strict_route`) + the profile's proxy outbound. `auto_detect_interface` keeps the server dial off the tunnel. |

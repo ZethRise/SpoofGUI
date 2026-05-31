@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using SpoofGUI.Core;
 using SpoofGUI.GUI.ViewModels;
 
 namespace SpoofGUI.GUI.Pages;
@@ -27,10 +28,57 @@ public sealed partial class SettingsPage : Page
         HttpPortBox.Text = _vm.HttpPort.ToString();
         AllowInsecureToggle.IsOn = _vm.XrayAllowInsecure;
         CheckOnLaunchToggle.IsOn = _vm.CheckUpdatesOnLaunch;
+        FastModeToggle.IsOn = _vm.FastMode;
         LogLevelCombo.SelectedIndex = LogLevelToIndex(_vm.XrayLogLevel);
         DefaultModeCombo.SelectedIndex = ModeToIndex(_vm.V2RayMode);
+        RemoteDnsBox.Text = _vm.RemoteDns;
+        DirectDnsBox.Text = _vm.DirectDns;
+        BootstrapDnsBox.Text = _vm.BootstrapDns;
+        DnsStrategyCombo.SelectedIndex = DnsStrategyToIndex(_vm.DnsStrategy);
         DataFolderText.Text = _vm.DataFolder;
         _initializing = false;
+    }
+
+    private static int DnsStrategyToIndex(string strategy) => strategy switch
+    {
+        "prefer_ipv6" => 1,
+        "ipv4_only" => 2,
+        "ipv6_only" => 3,
+        _ => 0,
+    };
+
+    private static string IndexToDnsStrategy(int index) => index switch
+    {
+        1 => "prefer_ipv6",
+        2 => "ipv4_only",
+        3 => "ipv6_only",
+        _ => "prefer_ipv4",
+    };
+
+    private void OnSaveDns(object sender, object e)
+    {
+        _vm.SaveDns(RemoteDnsBox.Text, DirectDnsBox.Text, BootstrapDnsBox.Text);
+        RemoteDnsBox.Text = _vm.RemoteDns;
+        DirectDnsBox.Text = _vm.DirectDns;
+        BootstrapDnsBox.Text = _vm.BootstrapDns;
+        DnsStatus.Text = "saved (reconnect to apply)";
+    }
+
+    private void OnResetDns(object sender, object e)
+    {
+        _vm.SaveDns(AppSettings.DefaultRemoteDns, AppSettings.DefaultDirectDns, AppSettings.DefaultBootstrapDns);
+        _vm.DnsStrategy = AppSettings.DefaultDnsStrategy;
+        RemoteDnsBox.Text = _vm.RemoteDns;
+        DirectDnsBox.Text = _vm.DirectDns;
+        BootstrapDnsBox.Text = _vm.BootstrapDns;
+        DnsStrategyCombo.SelectedIndex = DnsStrategyToIndex(_vm.DnsStrategy);
+        DnsStatus.Text = "reset to defaults (reconnect to apply)";
+    }
+
+    private void OnDnsStrategyChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_initializing) return;
+        _vm.DnsStrategy = IndexToDnsStrategy(DnsStrategyCombo.SelectedIndex);
     }
 
     private static int LogLevelToIndex(string level) => level switch
@@ -109,6 +157,12 @@ public sealed partial class SettingsPage : Page
     {
         if (_initializing) return;
         _vm.CheckUpdatesOnLaunch = CheckOnLaunchToggle.IsOn;
+    }
+
+    private void OnFastModeToggled(object sender, RoutedEventArgs e)
+    {
+        if (_initializing) return;
+        _vm.FastMode = FastModeToggle.IsOn;
     }
 
     private void OnOpenDataFolder(object sender, object e)

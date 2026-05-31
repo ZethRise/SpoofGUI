@@ -72,6 +72,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0">
@@ -104,8 +105,8 @@
                         <ListView.Resources>
                             <SolidColorBrush x:Key="ListViewItemBackground" Color="Transparent" />
                             <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#23272F" />
-                            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#2A2F3A" />
-                            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#2F343F" />
+                            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="Transparent" />
+                            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#23272F" />
                             <SolidColorBrush x:Key="ListViewItemSelectionIndicatorBrush" Color="Transparent" />
                         </ListView.Resources>
                         <ListView.ItemContainerStyle>
@@ -126,49 +127,82 @@
                         </ListView.ItemContainerTransitions>
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border CornerRadius="8"
-                                        Padding="12,11"
-                                        Background="{StaticResource SurfaceRaised}"
-                                        BorderBrush="{StaticResource BorderSubtle}"
-                                        BorderThickness="1">
-                                    <Grid ColumnSpacing="11">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0"
-                                                Width="3"
-                                                CornerRadius="2"
-                                                Background="{StaticResource AccentBase}"
-                                                Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}" />
-                                        <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Name}"
-                                                       Style="{StaticResource TextBody}"
-                                                       FontWeight="SemiBold"
-                                                       TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding Target}"
-                                                       Style="{StaticResource TextMono}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource TextSecondary}"
-                                                       TextTrimming="CharacterEllipsis" />
-                                        </StackPanel>
-                                        <Border Grid.Column="2"
-                                                VerticalAlignment="Center"
-                                                Background="{StaticResource AccentBase}"
-                                                CornerRadius="{StaticResource RadiusSm}"
-                                                Padding="10,3"
-                                                Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}">
-                                            <TextBlock Text="active"
-                                                       FontSize="11"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="#15181E" />
-                                        </Border>
-                                    </Grid>
-                                </Border>
+                                <Grid>
+                                    <Border Tag="card"
+                                            CornerRadius="8"
+                                            Padding="12,11"
+                                            Background="{StaticResource SurfaceRaised}"
+                                            BorderBrush="{StaticResource BorderSubtle}"
+                                            BorderThickness="1"
+                                            RenderTransformOrigin="0.5,0.5">
+                                        <Border.RenderTransform>
+                                            <ScaleTransform />
+                                        </Border.RenderTransform>
+                                        <Grid ColumnSpacing="11">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0"
+                                                    Width="3"
+                                                    CornerRadius="2"
+                                                    Background="{StaticResource AccentBase}"
+                                                    Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}" />
+                                            <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}"
+                                                           Style="{StaticResource TextBody}"
+                                                           FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Target}"
+                                                           Style="{StaticResource TextMono}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextSecondary}"
+                                                           TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <Border Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    Background="{StaticResource AccentBase}"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Padding="10,3"
+                                                    Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}">
+                                                <TextBlock Text="active"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#15181E" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <Border Tag="ring"
+                                            CornerRadius="8"
+                                            BorderThickness="2"
+                                            BorderBrush="{StaticResource AccentBase}"
+                                            Opacity="0"
+                                            IsHitTestVisible="False" />
+                                </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+
+                    <StackPanel Grid.Row="2" Spacing="10">
+                        <Border Style="{StaticResource SectionDivider}" Margin="0" />
+                        <TextBlock Text="SNI list" Style="{StaticResource TextCaption}" />
+                        <Button x:Name="FetchSniButton"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Style="{StaticResource SecondaryButton}"
+                                Click="OnFetchSniList">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <ProgressRing x:Name="FetchSpinner"
+                                              Width="16" Height="16"
+                                              Foreground="{StaticResource AccentBase}"
+                                              IsActive="False"
+                                              Visibility="Collapsed" />
+                                <SymbolIcon x:Name="FetchIcon" Symbol="Download" Foreground="{StaticResource TextPrimary}" />
+                                <TextBlock x:Name="FetchLabel" Text="fetch from repo" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </Border>
 

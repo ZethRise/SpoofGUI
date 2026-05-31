@@ -1,7 +1,7 @@
 param(
     [ValidateSet("amd64", "x86")]
     [string[]]$Arch = @("x86", "amd64"),
-    [string]$Version = "1.0.2",
+    [string]$Version = "1.0.3",
     [string]$SingBoxVersion = "1.13.12",
     [string]$WintunVersion = "0.14.1",
     [switch]$SkipEngine,

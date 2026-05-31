@@ -1,9 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SpoofGUI.Core;
 using SpoofGUI.GUI.ViewModels;
 using SpoofGUI.Models;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace SpoofGUI.GUI.Pages;
 
@@ -16,6 +18,7 @@ public sealed partial class V2RayPage : Page
     private bool _xrayRunning;
     private bool _systemProxyActive;
     private bool _tunnelActive;
+    private readonly DispatcherQueue _dispatcher = DispatcherQueue.GetForCurrentThread();
     private readonly NetStats.BandwidthSampler _sampler = new();
     private readonly DispatcherTimer _statsTimer = new() { Interval = TimeSpan.FromSeconds(1) };
     private DateTime? _connectedAt;
@@ -376,41 +379,96 @@ public sealed partial class V2RayPage : Page
         var hasSelection = _selected is not null;
         ConnectButton.IsEnabled = hasSelection && !_xrayRunning;
         StopButton.IsEnabled = _xrayRunning;
-        PingButton.IsEnabled = hasSelection && !_pinging;
+        PingButton.IsEnabled = !_pinging;
         EditButton.IsEnabled = hasSelection;
         DeleteButton.IsEnabled = hasSelection;
     }
 
-    private async void OnPing(object sender, object e)
+    private void SetPing(V2RayProfile profile, string value) =>
+        _dispatcher.TryEnqueue(() => profile.Ping = value);
+
+    private async Task PingProfileAsync(V2RayProfile profile, SemaphoreSlim gate)
     {
-        if (_pinging) return;
-        if (_selected is null)
-        {
-            StatusText.Text = "select a config first";
-            return;
-        }
-
-        _pinging = true;
-        PingButton.IsEnabled = false;
-        PingLabel.Text = "pinging…";
-        var target = _selected;
-        StatusText.Text = $"testing {target.Name}…";
-
+        await gate.WaitAsync();
+        SetPing(profile, "…");
         try
         {
-            var ms = await _vm.TestRealDelayAsync(target);
-            StatusText.Text = $"{target.Name}: {ms} ms";
+            var ms = await _vm.TestRealDelayAsync(profile);
+            SetPing(profile, $"{ms} ms");
         }
-        catch (Exception ex)
+        catch
         {
-            StatusText.Text = $"{target.Name}: ping failed ({ex.Message})";
+            SetPing(profile, "timeout");
         }
         finally
         {
-            _pinging = false;
-            PingLabel.Text = "ping";
-            RenderActionState();
+            gate.Release();
         }
+    }
+
+    private void SetPinging(bool on)
+    {
+        _pinging = on;
+        PingButton.IsEnabled = !on;
+        PingLabel.Text = on ? "pinging…" : "ping all";
+        PingIcon.Visibility = on ? Visibility.Collapsed : Visibility.Visible;
+        PingSpinner.IsActive = on;
+        PingSpinner.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+        if (!on) RenderActionState();
+    }
+
+    private async void OnPingAll(object sender, object e)
+    {
+        if (_pinging) return;
+        if (ProfileList.ItemsSource is not IReadOnlyList<V2RayProfile> profiles || profiles.Count == 0)
+        {
+            StatusText.Text = "no configs to ping";
+            return;
+        }
+
+        SetPinging(true);
+        StatusText.Text = $"pinging {profiles.Count} config(s)…";
+
+        try
+        {
+            await Task.Run(async () =>
+            {
+                using var gate = new SemaphoreSlim(3);
+                await Task.WhenAll(profiles.Select(p => PingProfileAsync(p, gate)));
+            });
+            StatusText.Text = "ping complete";
+        }
+        finally
+        {
+            SetPinging(false);
+        }
+    }
+
+    private async void OnPingOne(object sender, object e)
+    {
+        if (sender is not FrameworkElement { DataContext: V2RayProfile profile }) return;
+        await Task.Run(async () =>
+        {
+            using var gate = new SemaphoreSlim(1);
+            await PingProfileAsync(profile, gate);
+        });
+        StatusText.Text = $"{profile.Name}: {profile.Ping}";
+    }
+
+    private void OnExportConfig(object sender, object e)
+    {
+        if (sender is not FrameworkElement { DataContext: V2RayProfile profile }) return;
+        var text = string.IsNullOrWhiteSpace(profile.RawUri) ? profile.Address : profile.RawUri;
+        if (string.IsNullOrEmpty(text))
+        {
+            StatusText.Text = "nothing to export";
+            return;
+        }
+
+        var package = new DataPackage();
+        package.SetText(text);
+        Clipboard.SetContent(package);
+        StatusText.Text = $"copied to clipboard: {profile.Name}";
     }
 
     private static V2RayProfile Clone(V2RayProfile p) => new()

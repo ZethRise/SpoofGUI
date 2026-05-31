@@ -137,6 +137,29 @@
                             <ComboBoxItem Content="System Proxy" />
                         </ComboBox>
                     </Grid>
+
+                    <Border Style="{StaticResource SectionDivider}" Margin="0" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Fast mode" Style="{StaticResource TextBody}" />
+                            <TextBlock Text="Low-latency sockets for the SNI engine (gaming / real-time). Trades some throughput for lower delay. Applies on next connect."
+                                       Style="{StaticResource TextCaption}"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="560" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="FastModeToggle"
+                                      Grid.Column="1"
+                                      VerticalAlignment="Center"
+                                      OnContent=""
+                                      OffContent=""
+                                      MinWidth="0"
+                                      Toggled="OnFastModeToggled" />
+                    </Grid>
                 </StackPanel>
             </Border>
 
@@ -171,6 +194,66 @@
                         </Button>
                     </StackPanel>
                     <TextBlock x:Name="PortsStatus" Style="{StaticResource TextCaption}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="DNS" Style="{StaticResource TextH2}" />
+                        <TextBlock Text="DNS servers used in Tunnel mode. Plain IP (1.1.1.1) or a URL (https://1.1.1.1/dns-query). Applies on next connect."
+                                   Style="{StaticResource TextBodyMuted}"
+                                   MaxWidth="560" />
+                    </StackPanel>
+
+                    <Grid ColumnSpacing="16" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Remote DNS (proxied)" Style="{StaticResource FieldLabel}" />
+                            <TextBox x:Name="RemoteDnsBox" Style="{StaticResource FieldTextBox}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Direct DNS (default)" Style="{StaticResource FieldLabel}" />
+                            <TextBox x:Name="DirectDnsBox" Style="{StaticResource FieldTextBox}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Bootstrap DNS" Style="{StaticResource FieldLabel}" />
+                            <TextBox x:Name="BootstrapDnsBox" Style="{StaticResource FieldTextBox}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+                            <TextBlock Text="DNS strategy" Style="{StaticResource FieldLabel}" />
+                            <ComboBox x:Name="DnsStrategyCombo"
+                                      HorizontalAlignment="Stretch"
+                                      SelectionChanged="OnDnsStrategyChanged">
+                                <ComboBoxItem Content="prefer_ipv4" />
+                                <ComboBoxItem Content="prefer_ipv6" />
+                                <ComboBoxItem Content="ipv4_only" />
+                                <ComboBoxItem Content="ipv6_only" />
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button x:Name="SaveDnsButton"
+                                Style="{StaticResource PrimaryButton}"
+                                Click="OnSaveDns">
+                            <TextBlock Text="save DNS" />
+                        </Button>
+                        <Button x:Name="ResetDnsButton"
+                                Style="{StaticResource SecondaryButton}"
+                                Click="OnResetDns">
+                            <TextBlock Text="reset" />
+                        </Button>
+                    </StackPanel>
+                    <TextBlock x:Name="DnsStatus" Style="{StaticResource TextCaption}" />
                 </StackPanel>
             </Border>
 

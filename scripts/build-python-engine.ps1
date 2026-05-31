@@ -32,6 +32,11 @@ if ($reportedBits -ne $expectedBits) {
     throw "Active Python is $reportedBits-bit but $Arch needs $expectedBits-bit. Pass -PythonExe with a matching interpreter (a 32-bit Python for x86)."
 }
 
+$reportedVersion = Read-Py "import sys;print('%d.%d' % sys.version_info[:2])"
+if ($reportedVersion -ne "3.11") {
+    Write-Warning "Building the engine with Python $reportedVersion. The shipped engine is built with 3.11; other versions can produce an engine that starts but passes no traffic. Use: uv venv --seed --python 3.11 build\engine-venv-311 and pass -PythonExe build\engine-venv-311\Scripts\python.exe"
+}
+
 Invoke-Py @("-m", "pip", "install", "pyinstaller")
 Invoke-Py @("-m", "pip", "install", "-r", $requirements)
 

@@ -27,6 +27,7 @@ internal static class Bootstrap
         services.AddSingleton<XrayCoreService>();
         services.AddSingleton<SingBoxTunnelService>();
         services.AddSingleton<SniScannerService>();
+        services.AddSingleton<SniListService>();
 
         services.AddSingleton<MainPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();

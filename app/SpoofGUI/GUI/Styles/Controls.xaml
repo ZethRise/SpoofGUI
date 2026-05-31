@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ix="using:SpoofGUI.GUI.Interactions">
 
     <Style x:Key="PrimaryButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource AccentBase}" />
@@ -12,6 +13,7 @@
         <Setter Property="MinHeight" Value="36" />
         <Setter Property="CornerRadius" Value="{StaticResource RadiusSm}" />
         <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="ix:PressScale.IsEnabled" Value="True" />
     </Style>
 
     <Style x:Key="SecondaryButton" TargetType="Button">
@@ -24,6 +26,7 @@
         <Setter Property="Padding" Value="18,8" />
         <Setter Property="MinHeight" Value="36" />
         <Setter Property="CornerRadius" Value="{StaticResource RadiusSm}" />
+        <Setter Property="ix:PressScale.IsEnabled" Value="True" />
     </Style>
 
     <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">

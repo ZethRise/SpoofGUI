@@ -1,3 +1,4 @@
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using SpoofGUI.Core;
 
@@ -30,9 +31,22 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        var splash = new SplashWindow();
+        splash.Activate();
 
-        CurrentWindow = new MainWindow();
-        _window = CurrentWindow;
-        _window.Activate();
+        var dispatcher = DispatcherQueue.GetForCurrentThread();
+        dispatcher.TryEnqueue(DispatcherQueuePriority.Low, () =>
+        {
+            try
+            {
+                CurrentWindow = new MainWindow();
+                _window = CurrentWindow;
+                CurrentWindow.Activate();
+            }
+            finally
+            {
+                splash.Close();
+            }
+        });
     }
 }

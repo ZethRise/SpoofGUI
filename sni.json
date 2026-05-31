@@ -1,0 +1,23 @@
+[
+  { "sni": "hcaptcha.com", "ip": "104.19.229.21", "port": 443 },
+  { "sni": "xxrf.bid", "ip": "104.21.52.2", "port": 443 },
+  { "sni": "xxrf.bid", "ip": "172.67.192.135", "port": 443 },
+  { "sni": "static.cloudflareinsights.com", "ip": "104.16.80.73", "port": 443 },
+  { "sni": "static.cloudflareinsights.com", "ip": "104.16.79.73", "port": 443 },
+  { "sni": "kudabola.co", "ip": "104.21.55.140", "port": 443 },
+  { "sni": "kudabola.co", "ip": "172.67.148.241", "port": 443 },
+  { "sni": "krenarerugova.com", "ip": "104.21.75.206", "port": 443 },
+  { "sni": "krenarerugova.com", "ip": "172.67.181.251", "port": 443 },
+  { "sni": "chess.com", "ip": "104.18.137.67", "port": 443 },
+  { "sni": "chess.com", "ip": "104.18.140.67", "port": 443 },
+  { "sni": "chess.com", "ip": "104.18.139.67", "port": 443 },
+  { "sni": "chess.com", "ip": "104.18.138.67", "port": 443 },
+  { "sni": "chess.com", "ip": "104.18.141.67", "port": 443 },
+  { "sni": "hornbill.asia", "ip": "188.114.96.7", "port": 443 },
+  { "sni": "hornbill.asia", "ip": "188.114.97.7", "port": 443 },
+  { "sni": "letsencrypt.org", "ip": "35.157.26.135", "port": 443 },
+  { "sni": "yamahacentreamsterdam.nl", "ip": "188.114.98.0", "port": 443 },
+  { "sni": "auth.vercel.com", "ip": "188.114.98.0", "port": 443 },
+  { "sni": "mabryautomotive.com", "ip": "188.114.98.0", "port": 443 },
+  { "sni": "kudabola.com", "ip": "188.114.98.0", "port": 443 }
+]

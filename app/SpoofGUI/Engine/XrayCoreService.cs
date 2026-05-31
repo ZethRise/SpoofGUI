@@ -153,16 +153,33 @@ public sealed class XrayCoreService : IDisposable
                 Proxy = new WebProxy($"socks5://127.0.0.1:{port}"),
                 UseProxy = true,
             };
-            using var http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(10) };
+            using var http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(8) };
+            const string testUrl = "http://cp.cloudflare.com/generate_204";
 
-            var stopwatch = Stopwatch.StartNew();
-            using var response = await http.GetAsync("http://cp.cloudflare.com/generate_204", HttpCompletionOption.ResponseHeadersRead, ct);
-            stopwatch.Stop();
+            async Task<long> MeasureAsync()
+            {
+                var stopwatch = Stopwatch.StartNew();
+                using var response = await http.GetAsync(testUrl, HttpCompletionOption.ResponseHeadersRead, ct);
+                stopwatch.Stop();
+                if ((int)response.StatusCode is not (204 or 200))
+                    throw new InvalidOperationException($"unexpected status {(int)response.StatusCode}");
+                return stopwatch.ElapsedMilliseconds;
+            }
 
-            if ((int)response.StatusCode is not (204 or 200))
-                throw new InvalidOperationException($"unexpected status {(int)response.StatusCode}");
+            try { await MeasureAsync(); } catch { }
 
-            return stopwatch.ElapsedMilliseconds;
+            var best = long.MaxValue;
+            Exception? last = null;
+            for (var i = 0; i < 3; i++)
+            {
+                try { best = Math.Min(best, await MeasureAsync()); }
+                catch (Exception e) { last = e; }
+            }
+
+            if (best == long.MaxValue)
+                throw last ?? new InvalidOperationException("no response through proxy");
+
+            return best;
         }
         finally
         {
@@ -420,6 +437,25 @@ public sealed class XrayCoreService : IDisposable
         else if (network.Equals("grpc", StringComparison.OrdinalIgnoreCase))
         {
             stream["grpcSettings"] = new JsonObject { ["serviceName"] = query.GetValueOrDefault("serviceName", "") };
+        }
+        else if (network.Equals("xhttp", StringComparison.OrdinalIgnoreCase)
+                 || network.Equals("splithttp", StringComparison.OrdinalIgnoreCase))
+        {
+            stream["network"] = "xhttp";
+            stream["xhttpSettings"] = new JsonObject
+            {
+                ["host"] = query.GetValueOrDefault("host", serverName),
+                ["path"] = query.GetValueOrDefault("path", "/"),
+                ["mode"] = query.GetValueOrDefault("mode", "auto"),
+            };
+        }
+        else if (network.Equals("httpupgrade", StringComparison.OrdinalIgnoreCase))
+        {
+            stream["httpupgradeSettings"] = new JsonObject
+            {
+                ["host"] = query.GetValueOrDefault("host", serverName),
+                ["path"] = query.GetValueOrDefault("path", "/"),
+            };
         }
 
         outbound["streamSettings"] = stream;

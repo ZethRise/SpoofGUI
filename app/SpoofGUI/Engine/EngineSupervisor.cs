@@ -11,13 +11,18 @@ namespace SpoofGUI.Engine;
 public sealed class EngineSupervisor : IDisposable
 {
     private readonly ILogger<EngineSupervisor> _log;
+    private readonly AppSettings _appSettings;
     private Process? _proc;
     private DateTimeOffset? _startedAt;
 
     public bool IsRunning => _proc is { HasExited: false };
     public TimeSpan Uptime => _startedAt is null ? TimeSpan.Zero : DateTimeOffset.Now - _startedAt.Value;
 
-    public EngineSupervisor(ILogger<EngineSupervisor> log) => _log = log;
+    public EngineSupervisor(ILogger<EngineSupervisor> log, AppSettings appSettings)
+    {
+        _log = log;
+        _appSettings = appSettings;
+    }
 
     public void Start(SpoofProfile profile)
     {
@@ -146,9 +151,10 @@ public sealed class EngineSupervisor : IDisposable
         }
     }
 
-    private static void WriteConfig(SpoofProfile profile)
+    private void WriteConfig(SpoofProfile profile)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Paths.PatternEngineConfigPath)!);
+        var fastMode = _appSettings.FastMode;
         var config = new
         {
             LISTEN_HOST = profile.ListenHost,
@@ -156,10 +162,11 @@ public sealed class EngineSupervisor : IDisposable
             CONNECT_IP = profile.ConnectIp,
             CONNECT_PORT = profile.ConnectPort,
             FAKE_SNI = profile.FakeSni,
+            FAST_MODE = fastMode,
         };
         var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(Paths.PatternEngineConfigPath, json);
-        AppLog.Info($"config written: {profile.ListenHost}:{profile.ListenPort} -> {profile.ConnectIp}:{profile.ConnectPort}; fake_sni {profile.FakeSni}");
+        AppLog.Info($"config written: {profile.ListenHost}:{profile.ListenPort} -> {profile.ConnectIp}:{profile.ConnectPort}; fake_sni {profile.FakeSni}; fast_mode {fastMode}");
     }
 
     private static bool IsListening(string host, int port)
