@@ -6,6 +6,14 @@
 [![License](https://img.shields.io/badge/license-GPL--3.0-lightgrey?logo=gnu)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/ZethRise/SpoofGUI?logo=github)](https://github.com/ZethRise/SpoofGUI/stargazers)
 
+
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/845ae378-cbb8-4fbc-bebf-960fac3b3e7a" alt="Project screenshot" width="500">
+</p>
+
+
+
 SpoofGUI is a native Windows GUI fork for [patterniha/SNI-Spoofing](https://github.com/patterniha/SNI-Spoofing), maintained at [ZethRise/SpoofGUI](https://github.com/ZethRise/SpoofGUI).
 
 It is not a VPN. SpoofGUI runs the local SNI-Spoofing listener as administrator and bundles Xray (Proxy / System Proxy) and sing-box (Tunnel) for outbound. Point your client at:
@@ -18,7 +26,9 @@ It is not a VPN. SpoofGUI runs the local SNI-Spoofing listener as administrator 
 
 SOCKS / HTTP ports default to 20882 / 20883 and are configurable on the Settings page.
 
-<img width="1264" height="802" alt="image" src="https://github.com/user-attachments/assets/4266a7de-bc91-484a-9efc-5b2e6ca03e78" /> 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/31723a6e-f887-4bde-9480-b481f428ddf7" alt="Project screenshot" width="500">
+</p>
 
 ## Download
 
